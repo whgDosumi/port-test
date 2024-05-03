@@ -14,12 +14,128 @@
     <h1 class="title">Port Quiz</h1>
     <div id="quiz-box">
         <h3 id="port-name">Port Name</h3>
+        <p id="description">none</p>
         <br/>
-        <p>Enter correct port number below:</p>
-        <input type="number" pattern="\d*" inputmode="numeric" id="answer">
-        <input type="button" id="submit" value="Submit">
-        <h3 id="response" hidden>Empty</h3>
+        <p>Enter correct port info below:</p>
+        <select id="protocol">
+            <option value="TCP">TCP</option>
+            <option value="UDP">UDP</option>
+            <option value="BOTH">BOTH</option>
+        </select>
+        <input type="number" pattern="\d*" inputmode="numeric" id="answer" min="0" max="65535">
+        <input type="button" id="submit" value="Submit" onclick="submit()">
+        <p id="response" hidden>Empty</p>
+        <p id="score" hidden>Empty</p>
     </div>
+<script>
+    let protocolPorts = {
+        "FTP (Active Mode Data)": ["TCP", 20, "File Transfer Protocol (Active Mode Data): Used for establishing data connections, allowing file transfers between the server and client."],
+        "FTP (Control)": ["TCP", 21, "File Transfer Protocol (Control): Used for command control exchanges between the server and client."],
+        "SSH/Secure Shell": ["TCP", 22, "Secure Shell (SSH): Provides a secure channel over an unsecured network, primarily for remote command-line login and execution."],
+        "Telnet": ["TCP", 23, "Telnet: A network protocol used on the Internet or local area networks to provide a bidirectional interactive text-oriented communication facility."],
+        "SMTP": ["TCP", 25, "Simple Mail Transfer Protocol (SMTP): Used for sending emails across networks."],
+        "DNS": ["UDP", 53, "Domain Name System (DNS): Translates domain names to IP addresses."],
+        "DHCP (Client)": ["UDP", 67, "Dynamic Host Configuration Protocol (Client): Used by clients to request and obtain an IP address and other parameters from a server."],
+        "DHCP (Server)": ["UDP", 68, "Dynamic Host Configuration Protocol (Server): Used by servers to deliver network parameters to clients on IP networks."],
+        "HTTP": ["TCP", 80, "Hypertext Transfer Protocol (HTTP): The foundation of data communication for the World Wide Web, defining how messages are formatted and transmitted."],
+        "HTTPS": ["TCP", 443, "Hypertext Transfer Protocol Secure (HTTPS): An extension of HTTP that is used for secure communication over a computer network, and is widely used on the Internet."],
+        "POP3": ["TCP", 110, "Post Office Protocol version 3 (POP3): Used by local email clients to retrieve emails from a remote server over a TCP/IP connection."],
+        "IMAP4": ["TCP", 143, "Internet Message Access Protocol version 4 (IMAP4): Allows clients to access and manipulate email messages on a server before downloading them to the local client."],
+        "SMB/CIFS (NetBIOS Name Services)": ["UDP", 137, "Server Message Block/Common Internet File System (SMB/CIFS) NetBIOS Name Services: Used for network basic input/output system name resolution."],
+        "SMB/CIFS (NetBIOS Sessions Service)": ["UDP", 139, "Server Message Block/Common Internet File System (SMB/CIFS) NetBIOS Sessions Service: Used for session service to allow applications on different computers to communicate over a local area network."],
+        "SMB/CIFS (NetBIOS-less)": ["TCP", 445, "Server Message Block/Common Internet File System (SMB/CIFS) without NetBIOS: Uses a newer version of the SMB protocol, supporting more features and requiring less overhead."],
+        "SNMP (Queries)": ["UDP", 161, "Simple Network Management Protocol (SNMP) Queries: Used by network administrators for network management and monitoring."],
+        "SNMP (Traps)": ["UDP", 162, "Simple Network Management Protocol (SNMP) Traps: Used for sending alerts or notifications about network events."],
+        "LDAP": ["TCP", 389, "Lightweight Directory Access Protocol (LDAP): Used for accessing and maintaining distributed directory information services over a network."],
+        "RDP": ["TCP", 3389, "Remote Desktop Protocol (RDP): Allows a user to connect to another computer over a network connection, providing access to a remote desktop."]
+    };
+
+    // For scoring
+    let total = 0;
+    let correct = 0;
+    // Tracks which protocols have been used
+    let used = [];
+    // Current protocol selected.
+    let protocol = "";
+
+
+    // Selects a new random protocol and updates the quiz.
+    function update_quiz() 
+    {
+        // Declare variables
+        const keys = Object.keys(protocolPorts);
+        // Reset if we've used all keys
+        if (keys.length == used.length) 
+        {
+            used = [];
+        }
+        // Get a random unused protocol
+        do
+        {
+            protocol = keys[Math.floor(Math.random() * keys.length)];
+        } while (used.includes(protocol));
+        // Prevent -
+        document.getElementById("answer").addEventListener("keydown", function(event)
+        {
+            // Prevent entering the minus symbol
+            if (event.key === "-")
+            {
+                event.preventDefault();
+            }
+        });
+        // Enforce maximum number of 65535
+        document.getElementById("answer").addEventListener("input", function(event)
+        {
+            // Ensure the number does not exceed 65535
+            if (parseInt(this.value, 10) > 65535)
+            {
+                this.value = 65535; // Set value to the maximum allowed if it exceeds the limit
+            }
+        });
+        // Add protocol to used (so we can track which we've used so far and avoid repeats.)
+        used.push(protocol);
+        // Update document
+        document.getElementById("port-name").textContent = protocol;
+        document.getElementById("description").textContent = protocolPorts[protocol][2];
+        document.getElementById("answer").value = "";
+    }
+    document.addEventListener('DOMContentLoaded', update_quiz);
+
+    function get_score_text()
+    {
+        if (total > 0)
+        {
+            return `${correct}/${total} correct, ${Math.floor((correct / total) * 100)}%`;
+        }
+        return "None answered";
+    }
+
+    function submit()
+    {
+        // Get entered information
+        let answer = document.getElementById("answer").value;
+        let main_protocol = document.getElementById("protocol").value;
+        document.getElementById("response").hidden = false;
+        if (answer === "")
+        {
+            document.getElementById("response").textContent = "You must enter a port number.";
+            return;
+        }
+        total += 1
+        if (answer == protocolPorts[protocol][1] && main_protocol === protocolPorts[protocol][0])
+        {
+            correct += 1;
+            document.getElementById("response").innerText = "Correct! 😁";
+        } else 
+        {
+            document.getElementById("response").innerText = `Incorrect! 😞\n${protocol} is ${protocolPorts[protocol][0]} ${protocolPorts[protocol][1]}`;
+        }
+        document.getElementById("score").innerText = get_score_text();
+        document.getElementById("score").hidden = false;
+        update_quiz();
+    }
+
+</script>
 </body>
 
 </html>
