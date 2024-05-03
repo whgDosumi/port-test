@@ -25,6 +25,7 @@
         <input type="number" pattern="\d*" inputmode="numeric" id="answer" min="0" max="65535">
         <input type="button" id="submit" value="Submit" onclick="submit()">
         <p id="response" hidden>Empty</p>
+        <br />
         <p id="score" hidden>Empty</p>
     </div>
 <script>
@@ -128,7 +129,7 @@
             document.getElementById("response").innerText = "Correct! 😁";
         } else 
         {
-            document.getElementById("response").innerText = `Incorrect! 😞\n${protocol} is ${protocolPorts[protocol][0]} ${protocolPorts[protocol][1]}`;
+            document.getElementById("response").innerText = `Incorrect! 😞\n${protocol} is ${protocolPorts[protocol][0]} ${protocolPorts[protocol][1]}\nYou answered ${main_protocol} ${answer}\n`;
         }
         document.getElementById("score").innerText = get_score_text();
         document.getElementById("score").hidden = false;
